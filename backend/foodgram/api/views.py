@@ -98,6 +98,8 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         user = get_object_or_404(User, username=username)
         if user.password == current_password:
+            user.password = new_password
+            user.save()
             return Response(
                 {'new current password': str(new_password)},
                 status=status.HTTP_200_OK
