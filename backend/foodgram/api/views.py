@@ -1,4 +1,3 @@
-
 from django.contrib.auth import get_user_model
 from django.db.models import Sum
 from django.http import HttpResponse
@@ -18,7 +17,24 @@ from . import serializers
 User = get_user_model()
 
 
-# Create your views here.
+class helper_class():
+    def add_del_obj_action(request, model, serializer, data):
+        """Функция для добавления и удаления данных в модели Favorite,
+        Follow, ShoppingCart."""
+
+        obj_exists = model.objects.filter(**data)
+        if request.method == 'POST':
+            serializer = serializer(data=data, context={'request': request})
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(
+                serializer.data,
+                status=status.HTTP_201_CREATED,
+            )
+        obj_exists.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
 class SignupView(APIView):
     permission_classes = (AllowAny,)
 
@@ -75,13 +91,14 @@ class UserViewSet(viewsets.ModelViewSet):
         if request.method == 'GET':
             serializer = serializers.CustomUserSerializer(self.request.user)
             return Response(serializer.data, status=status.HTTP_200_OK)
-        user = get_object_or_404(User, username=self.request.user)
-        serializer = serializers.CustomUserSerializer(
-            user, data=request.data, partial=True
-        )
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data)
+        if request.method == "PATCH":
+            user = get_object_or_404(User, username=self.request.user)
+            serializer = serializers.CustomUserSerializer(
+                user, data=request.data, partial=True
+            )
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data)
 
     @action(
         methods=['post', ],
@@ -108,23 +125,6 @@ class UserViewSet(viewsets.ModelViewSet):
             {'you took mistake': 'current password is another'},
             status=status.HTTP_400_BAD_REQUEST
         )
-
-
-def add_del_obj_action(request, model, serializer, data):
-    """Функция для добавления и удаления данных в модели Favorite,
-    Follow, ShoppingCart."""
-
-    obj_exists = model.objects.filter(**data)
-    if request.method == 'POST':
-        serializer = serializer(data=data, context={'request': request})
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(
-            serializer.data,
-            status=status.HTTP_201_CREATED,
-        )
-    obj_exists.delete()
-    return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class RecipesViewSet(viewsets.ModelViewSet):
@@ -154,7 +154,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
             'user': request.user.id,
             'recipe': id,
         }
-        return add_del_obj_action(
+        return helper_class.add_del_obj_action(
             request,
             Favorite,
             serializers.FavoriteSerializer,
@@ -171,7 +171,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
             'user': request.user.id,
             'recipe': id,
         }
-        return add_del_obj_action(
+        return helper_class.add_del_obj_action(
             request,
             ShoppingCart,
             serializers.ShoppingCartSerializer,

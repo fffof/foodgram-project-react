@@ -1,10 +1,9 @@
-import base64
-
 from django.contrib.auth import get_user_model
-from django.core.files.base import ContentFile
 from recipes.models import (Favorite, Follow, ShoppingCart, ingredients,
                             recipe, recipe_ingredients, teg)
 from rest_framework import serializers
+
+from .fields import Base64ImageField
 
 User = get_user_model()
 
@@ -43,20 +42,6 @@ class CustomUserSerializer(serializers.ModelSerializer):
             'last_name', 'email', "id"
         )
         lookup_field = 'username'
-
-
-class Base64ImageField(serializers.ImageField):
-    def to_internal_value(self, data):
-
-        if isinstance(data, str) and data.startswith('data:image'):
-
-            format, imgstr = data.split(';base64,')
-
-            ext = format.split('/')[-1]
-
-            data = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
-
-        return super().to_internal_value(data)
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -134,26 +119,16 @@ class CustomRecipeSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         tags = validated_data.pop("tags")
-
         if 'ingredients' not in self.initial_data:
-
-            recip = recipe.objects.create(**validated_data)
-            return recip
+            return recipe.objects.create(**validated_data)
         ingredientics = validated_data.pop('ingredients')
-
         recip = recipe.objects.create(**validated_data)
-        obj_ingredient_recipe = []
-
-        for ingredient in ingredientics:
-            print(ingredient['ingredients'].get("id"))
-            obj_ingredient_recipe.append(
-                recipe_ingredients(
+        recipe_ingredients.objects.bulk_create(
+            [recipe_ingredients(
                     recipe=recip,
                     ingredients=ingredient['ingredients'].get("id"),
                     amount=ingredient.get('amount'),
-                )
-            )
-        recipe_ingredients.objects.bulk_create(obj_ingredient_recipe)
+                ) for ingredient in ingredientics])
 
         recip.tags.set(tags)
         return recip

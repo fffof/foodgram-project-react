@@ -1,5 +1,4 @@
-from rest_framework.permissions import (SAFE_METHODS, BasePermission,
-                                        IsAdminUser)
+from rest_framework.permissions import IsAdminUser
 
 
 class IsSuperUser(IsAdminUser):

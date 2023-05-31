@@ -22,7 +22,7 @@ from rest_framework.routers import DefaultRouter
 
 v1_router = DefaultRouter()
 
-v1_router.register(r'users', UserViewSet, basename='user')
+v1_router.register('users', UserViewSet, basename='user')
 v1_router.register(
     r'users/(?P<user_id>\d+)/subscribe',
     UserFollowingViewSet,
