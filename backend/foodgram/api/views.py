@@ -172,7 +172,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
         return add_del_obj_action(
             request,
             ShoppingCart,
-            serializers.FavoriteSerializer,
+            serializers.ShoppingCartSerializer,
             data,
         )
 
@@ -185,11 +185,10 @@ class RecipesViewSet(viewsets.ModelViewSet):
     def download_shopping_cart(self, request):
         user = request.user
         text = 'Cписок покупок: \n'
-
         shopping_cart = recipe_ingredients.objects.filter(
             recipe_id__in=user.shoppings.values_list('recipe_id', flat=True)
         ).values_list(
-            'ingredient__name', 'ingredient__measurement_unit'
+            'ingredients__title', 'ingredients__measurement'
         ).annotate(Sum('amount'))
 
         for index, ingredient in enumerate(sorted(shopping_cart), start=1):

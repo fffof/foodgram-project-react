@@ -269,7 +269,7 @@ class FavoriteShoppingCartSerializer(serializers.ModelSerializer):
         required=False,
         source='recipe.image',
     )
-    coocking_time = serializers.ReadOnlyField(source='recipe.ccoocking_time')
+    coocking_time = serializers.ReadOnlyField(source='recipe.coocking_time')
 
     class Meta:
         model = Favorite
