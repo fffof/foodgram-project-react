@@ -17,7 +17,7 @@ from . import serializers
 User = get_user_model()
 
 
-class helper_class():
+class CreateDeleteMixin:
     def add_del_obj_action(request, model, serializer, data):
         """Функция для добавления и удаления данных в модели Favorite,
         Follow, ShoppingCart."""
@@ -127,7 +127,7 @@ class UserViewSet(viewsets.ModelViewSet):
         )
 
 
-class RecipesViewSet(viewsets.ModelViewSet):
+class RecipesViewSet(viewsets.ModelViewSet, CreateDeleteMixin):
     queryset = recipe.objects.all()
     serializer_class = serializers.CustomRecipeSerializer
     permission_classes = (IsAuthenticated,)
@@ -138,7 +138,6 @@ class RecipesViewSet(viewsets.ModelViewSet):
 
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
-        print(request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -154,7 +153,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
             'user': request.user.id,
             'recipe': id,
         }
-        return helper_class.add_del_obj_action(
+        return self.add_del_obj_action(
             request,
             Favorite,
             serializers.FavoriteSerializer,
@@ -171,7 +170,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
             'user': request.user.id,
             'recipe': id,
         }
-        return helper_class.add_del_obj_action(
+        return self.add_del_obj_action(
             request,
             ShoppingCart,
             serializers.ShoppingCartSerializer,
