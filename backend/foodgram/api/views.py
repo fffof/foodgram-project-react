@@ -35,22 +35,6 @@ class CreateDeleteMixin:
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class SignupView(APIView):
-    permission_classes = (AllowAny,)
-
-    def post(self, request):
-        username = request.data.get("username")
-        email = request.data.get("email")
-        if User.objects.filter(username=username).exists():
-            if User.objects.get(username=username).email != email:
-                return Response(status=status.HTTP_400_BAD_REQUEST)
-            return Response(status=status.HTTP_200_OK)
-        serializer = serializers.SignupSerializer(data=self.request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data)
-
-
 class ConfirmationView(APIView):
     permission_classes = (AllowAny,)
 
@@ -76,7 +60,6 @@ class ConfirmationView(APIView):
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = serializers.CustomUserSerializer
-    permission_classes = (IsAuthenticated,)
     filter_backends = (SearchFilter,)
     search_fields = ('id',)
     lookup_field = 'id'
@@ -125,6 +108,23 @@ class UserViewSet(viewsets.ModelViewSet):
             {'you took mistake': 'current password is another'},
             status=status.HTTP_400_BAD_REQUEST
         )
+
+    @action(
+        methods=['post', ],
+        detail=False,
+        permission_classes=[AllowAny]
+    )
+    def signup(self, request):
+        username = request.data.get("username")
+        email = request.data.get("email")
+        if User.objects.filter(username=username).exists():
+            if User.objects.get(username=username).email != email:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            return Response(status=status.HTTP_200_OK)
+        serializer = serializers.SignupSerializer(data=self.request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
 
 
 class RecipesViewSet(viewsets.ModelViewSet, CreateDeleteMixin):

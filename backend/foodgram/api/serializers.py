@@ -8,6 +8,19 @@ from .fields import Base64ImageField
 User = get_user_model()
 
 
+class GetFiledMixin:
+    def get_is_field_action(request, model, data):
+        """Функция для фильтрации queryset по заданным параметрам."""
+
+        user = None
+        if request and hasattr(request, 'user'):
+            user = request.user
+        if not user:
+            return False
+        data.update({'user': user.id})
+        return model.objects.filter(**data).exists()
+
+
 class SignupSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -99,10 +112,12 @@ class RecipeViewSerializer(serializers.ModelSerializer):
         return IngredientInRecipeSerializer(ingredients, many=True).data
 
 
-class CustomRecipeSerializer(serializers.ModelSerializer):
+class CustomRecipeSerializer(serializers.ModelSerializer, GetFiledMixin):
     image = Base64ImageField(required=False, allow_null=True)
     ingredients = IngredientInRecipeSerializer(many=True)
     coocking_time = serializers.CharField()
+    is_favorited = serializers.SerializerMethodField(read_only=True)
+    is_in_shopping_cart = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = recipe
@@ -110,12 +125,28 @@ class CustomRecipeSerializer(serializers.ModelSerializer):
             "id",
             "tags",
             "ingredients",
+            'is_favorited',
+            'is_in_shopping_cart',
             "name",
             "image",
             "text",
             "coocking_time",
             "author"
         )
+    
+    def get_is_favorited(self, obj):
+        request = self.context.get('request')
+        data = {
+            'recipe': obj.id
+        }
+        return self.get_is_field_action(request, Favorite, data)
+
+    def get_is_in_shopping_cart(self, obj):
+        request = self.context.get('request')
+        data = {
+            'recipe': obj.id
+        }
+        return self.get_is_field_action(request, ShoppingCart, data)
 
     def create(self, validated_data):
         tags = validated_data.pop("tags")
@@ -132,6 +163,24 @@ class CustomRecipeSerializer(serializers.ModelSerializer):
 
         recip.tags.set(tags)
         return recip
+    
+    def update(self, instance, validated_data):
+        tags = validated_data.pop("tags")
+        if 'ingredients' not in self.initial_data:
+            return recipe.objects.create(**validated_data)
+        ingredientics = validated_data.pop('ingredients')
+        recip = recipe.objects.create(**validated_data)
+        recipe_ingredients.objects.bulk_create(
+            [recipe_ingredients(
+                    recipe=recip,
+                    ingredients=ingredient['ingredients'].get("id"),
+                    amount=ingredient.get('amount'),
+                ) for ingredient in ingredientics])
+
+        recip.tags.set(tags)
+        return recip
+
+        return super().update(instance, validated_data)
 
     def to_representation(self, instance):
         return RecipeViewSerializer(
