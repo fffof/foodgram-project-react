@@ -136,7 +136,7 @@ class UserViewSet(viewsets.ModelViewSet):
 class RecipesViewSet(viewsets.ModelViewSet, CreateDeleteMixin):
     queryset = Recipes.objects.all()
     serializer_class = serializers.CustomRecipeSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (AllowAny,)
     filter_backends = (SearchFilter,)
     search_fields = ('id',)
     lookup_field = ('id')
