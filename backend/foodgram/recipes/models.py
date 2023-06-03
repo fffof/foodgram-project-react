@@ -4,7 +4,7 @@ from django.db import models
 User = get_user_model()
 
 
-class Teg(models.Model):
+class Tag(models.Model):
     name = models.CharField(
         "Название",
         max_length=100)
@@ -44,7 +44,7 @@ class Recipes(models.Model):
         'Текст поста',
         help_text='Введите текст поста'
     )
-    tags = models.ManyToManyField(Teg)
+    tags = models.ManyToManyField(Tag)
     coocking_time = models.IntegerField(
         "Время приготовления"
     )
@@ -59,7 +59,7 @@ class Recipes(models.Model):
     )
     ingredients = models.ManyToManyField(
         Ingredients,
-        through="Recipes_ingredients")
+        through="Recipes_Ingredients")
     image = models.ImageField(
         'Картинка',
         upload_to='media/.recipes/images/',
@@ -75,7 +75,7 @@ class Recipes(models.Model):
         return self.name
 
 
-class Recipes_ingredients(models.Model):
+class Recipes_Ingredients(models.Model):
     recipe = models.ForeignKey(Recipes, on_delete=models.CASCADE)
     ingredients = models.ForeignKey(Ingredients, on_delete=models.CASCADE)
     amount = models.IntegerField(default=0)

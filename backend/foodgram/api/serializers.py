@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from recipes.models import (Favorite, Follow, Ingredients, Recipes,
-                            Recipes_ingredients, ShoppingCart, Teg)
+                            Recipes_Ingredients, ShoppingCart, Tag)
 from rest_framework import serializers
 
 from .fields import Base64ImageField
@@ -9,7 +9,7 @@ User = get_user_model()
 
 
 class GetFiledMixin:
-    def get_is_field_action(request, model, data):
+    def get_is_field_action(self, request, model, data):
         """Функция для фильтрации queryset по заданным параметрам."""
 
         user = None
@@ -75,14 +75,14 @@ class IngredientInRecipeSerializer(serializers.ModelSerializer):
     amount = serializers.IntegerField()
 
     class Meta:
-        model = Recipes_ingredients
+        model = Recipes_Ingredients
         fields = ('id', 'name', 'measurement', 'amount')
 
 
 class TagSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = Teg
+        model = Tag
         fields = ('id', 'name', 'color', 'slug')
 
 
@@ -108,7 +108,7 @@ class RecipeViewSerializer(serializers.ModelSerializer):
         )
 
     def get_ingredients(self, obj):
-        ingredients = Recipes_ingredients.objects.filter(recipe=obj)
+        ingredients = Recipes_Ingredients.objects.filter(recipe=obj)
         return IngredientInRecipeSerializer(ingredients, many=True).data
 
 
@@ -154,8 +154,8 @@ class CustomRecipeSerializer(serializers.ModelSerializer, GetFiledMixin):
             return Recipes.objects.create(**validated_data)
         ingredientics = validated_data.pop('ingredients')
         recip = Recipes.objects.create(**validated_data)
-        Recipes_ingredients.objects.bulk_create(
-            [Recipes_ingredients(
+        Recipes_Ingredients.objects.bulk_create(
+            [Recipes_Ingredients(
                 recipe=recip,
                 ingredients=ingredient['ingredients'].get("id"),
                 amount=ingredient.get('amount'),
@@ -170,8 +170,8 @@ class CustomRecipeSerializer(serializers.ModelSerializer, GetFiledMixin):
             return Recipes.objects.create(**validated_data)
         ingredientics = validated_data.pop('ingredients')
         recip = Recipes.objects.create(**validated_data)
-        Recipes_ingredients.objects.bulk_create(
-            [Recipes_ingredients(
+        Recipes_Ingredients.objects.bulk_create(
+            [Recipes_Ingredients(
                 recipe=recip,
                 ingredients=ingredient['ingredients'].get("id"),
                 amount=ingredient.get('amount'),
@@ -247,7 +247,7 @@ class UserFollowGettingSerializer(serializers.ModelSerializer):
 class TagSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = Teg
+        model = Tag
         fields = ('id', 'name', 'color', 'slug')
 
 

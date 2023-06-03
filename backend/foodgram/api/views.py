@@ -2,8 +2,8 @@ from django.contrib.auth import get_user_model
 from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
-from recipes.models import (Favorite, Follow, Recipes, Recipes_ingredients,
-                            ShoppingCart, Teg)
+from recipes.models import (Favorite, Follow, Recipes, Recipes_Ingredients,
+                            ShoppingCart, Tag)
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
@@ -20,7 +20,7 @@ User = get_user_model()
 
 
 class CreateDeleteMixin:
-    def add_del_obj_action(request, model, serializer, data):
+    def add_del_obj_action(self, request, model, serializer, data):
         """Функция для добавления и удаления данных в модели Favorite,
         Follow, ShoppingCart."""
 
@@ -189,7 +189,7 @@ class RecipesViewSet(viewsets.ModelViewSet, CreateDeleteMixin):
     def download_shopping_cart(self, request):
         user = request.user
         text = 'Cписок покупок: \n'
-        shopping_cart = Recipes_ingredients.objects.filter(
+        shopping_cart = Recipes_Ingredients.objects.filter(
             recipe_id__in=user.shoppings.values_list('recipe_id', flat=True)
         ).values_list(
             'ingredients__title', 'ingredients__measurement'
@@ -248,6 +248,6 @@ class FavoriteViewSet(viewsets.ViewSet):
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = serializers.TagSerializer
-    queryset = Teg.objects.all()
+    queryset = Tag.objects.all()
     permission_classes = (AdminOrReadOnly,)
     pagination_class = None
