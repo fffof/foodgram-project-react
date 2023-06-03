@@ -1,5 +1,6 @@
 from api.views import (ConfirmationView, FavoriteViewSet, RecipesViewSet,
-                       UserFollowingViewSet, UserFollowViewSet, UserViewSet)
+                       TagViewSet, UserFollowingViewSet, UserFollowViewSet,
+                       UserViewSet)
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
@@ -16,6 +17,7 @@ v1_router.register(
     FavoriteViewSet,
     basename='subscription'
 )
+v1_router.register('tags', TagViewSet, basename='tags')
 v1_router.register(r"recipes", RecipesViewSet, basename="recipe")
 urlpatterns = [
     path("users/subscriptions/", UserFollowViewSet.as_view({'get': 'list'})),

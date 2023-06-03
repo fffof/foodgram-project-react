@@ -4,7 +4,7 @@ from django.db import models
 User = get_user_model()
 
 
-class teg(models.Model):
+class Teg(models.Model):
     name = models.CharField(
         "Название",
         max_length=100)
@@ -21,12 +21,12 @@ class teg(models.Model):
         return self.slug
 
 
-class ingredients(models.Model):
+class Ingredients(models.Model):
     title = models.CharField(
         "Название",
         max_length=100)
 
-    measurement = models.CharField('Ед. измерения', max_length=128)
+    measurement_unit = models.CharField('Ед. измерения', max_length=128)
 
     class Meta:
         verbose_name = 'Ингредиент'
@@ -36,7 +36,7 @@ class ingredients(models.Model):
         return f'{self.id}, {self.title}'
 
 
-class recipe(models.Model):
+class Recipes(models.Model):
     name = models.CharField(
         "Название",
         max_length=100)
@@ -44,7 +44,7 @@ class recipe(models.Model):
         'Текст поста',
         help_text='Введите текст поста'
     )
-    tags = models.ManyToManyField(teg)
+    tags = models.ManyToManyField(Teg)
     coocking_time = models.IntegerField(
         "Время приготовления"
     )
@@ -58,8 +58,8 @@ class recipe(models.Model):
         'Дата добавления', auto_now_add=True, db_index=True
     )
     ingredients = models.ManyToManyField(
-        ingredients,
-        through="recipe_ingredients")
+        Ingredients,
+        through="Recipes_ingredients")
     image = models.ImageField(
         'Картинка',
         upload_to='media/.recipes/images/',
@@ -75,9 +75,9 @@ class recipe(models.Model):
         return self.name
 
 
-class recipe_ingredients(models.Model):
-    recipe = models.ForeignKey(recipe, on_delete=models.CASCADE)
-    ingredients = models.ForeignKey(ingredients, on_delete=models.CASCADE)
+class Recipes_ingredients(models.Model):
+    recipe = models.ForeignKey(Recipes, on_delete=models.CASCADE)
+    ingredients = models.ForeignKey(Ingredients, on_delete=models.CASCADE)
     amount = models.IntegerField(default=0)
 
     class Meta:
@@ -118,7 +118,7 @@ class ShoppingCart(models.Model):
         verbose_name='Пользователь',
     )
     recipe = models.ForeignKey(
-        recipe,
+        Recipes,
         related_name='shoppings',
         on_delete=models.CASCADE,
         verbose_name='Рецепт'
@@ -145,7 +145,7 @@ class Favorite(models.Model):
         verbose_name='Пользователь',
     )
     recipe = models.ForeignKey(
-        recipe,
+        Recipes,
         related_name='favorites',
         on_delete=models.CASCADE,
         verbose_name='Рецепт'

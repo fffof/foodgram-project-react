@@ -2,8 +2,8 @@ from django.contrib.auth import get_user_model
 from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
-from recipes.models import (Favorite, Follow, ShoppingCart, recipe,
-                            recipe_ingredients)
+from recipes.models import (Favorite, Follow, Recipes, Recipes_ingredients,
+                            ShoppingCart, Teg)
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
@@ -13,6 +13,8 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken
 
 from . import serializers
+from .paginate import CustomPagination
+from .permissions import AdminOrReadOnly
 
 User = get_user_model()
 
@@ -112,7 +114,7 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(
         methods=['post', ],
         detail=False,
-        permission_classes=[AllowAny]
+        permission_classes=[AllowAny, ]
     )
     def signup(self, request):
         username = request.data.get("username")
@@ -128,13 +130,14 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class RecipesViewSet(viewsets.ModelViewSet, CreateDeleteMixin):
-    queryset = recipe.objects.all()
+    queryset = Recipes.objects.all()
     serializer_class = serializers.CustomRecipeSerializer
     permission_classes = (IsAuthenticated,)
     filter_backends = (SearchFilter,)
     search_fields = ('id',)
     lookup_field = ('id')
     http_method_names = ['patch', 'get', 'post', 'delete']
+    pagination_class = CustomPagination
 
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
@@ -186,7 +189,7 @@ class RecipesViewSet(viewsets.ModelViewSet, CreateDeleteMixin):
     def download_shopping_cart(self, request):
         user = request.user
         text = 'Cписок покупок: \n'
-        shopping_cart = recipe_ingredients.objects.filter(
+        shopping_cart = Recipes_ingredients.objects.filter(
             recipe_id__in=user.shoppings.values_list('recipe_id', flat=True)
         ).values_list(
             'ingredients__title', 'ingredients__measurement'
@@ -230,14 +233,21 @@ class UserFollowViewSet(viewsets.ViewSet):
 
 
 class FavoriteViewSet(viewsets.ViewSet):
-    queryset = recipe()
+    queryset = Recipes()
     serializer_class = serializers.CustomRecipSerializer
     permission_classes = (IsAuthenticated,)
 
     def get_recipe_id(self):
-        return get_object_or_404(recipe, id=self.kwargs.get("recipe_id"))
+        return get_object_or_404(Recipes, id=self.kwargs.get("recipe_id"))
 
     def perform_create(self, serializer):
         user = self.request.user
         recip = self.get_recip_id()
         serializer.save(user=user, recipe=recip)
+
+
+class TagViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = serializers.TagSerializer
+    queryset = Teg.objects.all()
+    permission_classes = (AdminOrReadOnly,)
+    pagination_class = None
