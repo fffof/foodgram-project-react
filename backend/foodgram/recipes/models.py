@@ -59,7 +59,7 @@ class Recipes(models.Model):
     )
     ingredients = models.ManyToManyField(
         Ingredients,
-        through="Recipes_Ingredients")
+        through="RecipesIngredients")
     image = models.ImageField(
         'Картинка',
         upload_to='media/.recipes/images/',
@@ -75,7 +75,7 @@ class Recipes(models.Model):
         return self.name
 
 
-class Recipes_Ingredients(models.Model):
+class RecipesIngredients(models.Model):
     recipe = models.ForeignKey(Recipes, on_delete=models.CASCADE)
     ingredients = models.ForeignKey(Ingredients, on_delete=models.CASCADE)
     amount = models.IntegerField(default=0)

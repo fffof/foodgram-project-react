@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from recipes.models import (Favorite, Follow, Ingredients, Recipes,
-                            Recipes_Ingredients, ShoppingCart, Tag)
+                            RecipesIngredients, ShoppingCart, Tag)
 from rest_framework import serializers
 
 from .fields import Base64ImageField
@@ -75,7 +75,7 @@ class IngredientInRecipeSerializer(serializers.ModelSerializer):
     amount = serializers.IntegerField()
 
     class Meta:
-        model = Recipes_Ingredients
+        model = RecipesIngredients
         fields = ('id', 'name', 'measurement', 'amount')
 
 
@@ -108,7 +108,7 @@ class RecipeViewSerializer(serializers.ModelSerializer):
         )
 
     def get_ingredients(self, obj):
-        ingredients = Recipes_Ingredients.objects.filter(recipe=obj)
+        ingredients = RecipesIngredients.objects.filter(recipe=obj)
         return IngredientInRecipeSerializer(ingredients, many=True).data
 
 
@@ -154,8 +154,8 @@ class CustomRecipeSerializer(serializers.ModelSerializer, GetFiledMixin):
             return Recipes.objects.create(**validated_data)
         ingredientics = validated_data.pop('ingredients')
         recip = Recipes.objects.create(**validated_data)
-        Recipes_Ingredients.objects.bulk_create(
-            [Recipes_Ingredients(
+        RecipesIngredients.objects.bulk_create(
+            [RecipesIngredients(
                 recipe=recip,
                 ingredients=ingredient['ingredients'].get("id"),
                 amount=ingredient.get('amount'),
@@ -170,8 +170,8 @@ class CustomRecipeSerializer(serializers.ModelSerializer, GetFiledMixin):
             return Recipes.objects.create(**validated_data)
         ingredientics = validated_data.pop('ingredients')
         recip = Recipes.objects.create(**validated_data)
-        Recipes_Ingredients.objects.bulk_create(
-            [Recipes_Ingredients(
+        RecipesIngredients.objects.bulk_create(
+            [RecipesIngredients(
                 recipe=recip,
                 ingredients=ingredient['ingredients'].get("id"),
                 amount=ingredient.get('amount'),

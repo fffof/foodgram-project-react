@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
-from recipes.models import (Favorite, Follow, Recipes, Recipes_Ingredients,
+from recipes.models import (Favorite, Follow, Recipes, RecipesIngredients,
                             ShoppingCart, Tag)
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -84,6 +84,10 @@ class UserViewSet(viewsets.ModelViewSet):
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data)
+        return Response(
+            {'you took mistake': 'current password is another'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
     @action(
         methods=['post', ],
@@ -189,15 +193,15 @@ class RecipesViewSet(viewsets.ModelViewSet, CreateDeleteMixin):
     def download_shopping_cart(self, request):
         user = request.user
         text = 'Cписок покупок: \n'
-        shopping_cart = Recipes_Ingredients.objects.filter(
+        shopping_cart = RecipesIngredients.objects.filter(
             recipe_id__in=user.shoppings.values_list('recipe_id', flat=True)
         ).values_list(
             'ingredients__title', 'ingredients__measurement'
         ).annotate(Sum('amount'))
 
         for index, ingredient in enumerate(sorted(shopping_cart), start=1):
-            text += f'{index}. {ingredient[0].capitalize()} ' \
-                    f'({ingredient[1]}) - {ingredient[2]};\n'
+            text += f'{index}. {ingredient[0].capitalize()} '
+            text += f'({ingredient[1]}) - {ingredient[2]};\n'
 
         response = HttpResponse(text, content_type='text/plain')
         response['Content-Disposition'] = (
