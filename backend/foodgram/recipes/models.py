@@ -44,7 +44,7 @@ class Recipes(models.Model):
         'Текст поста',
         help_text='Введите текст поста'
     )
-    tags = models.ManyToManyField(Tag)
+    tags = models.ManyToManyField(Tag, through="TagRecipes")
     coocking_time = models.IntegerField(
         "Время приготовления"
     )
@@ -55,7 +55,7 @@ class Recipes(models.Model):
         blank=True,
         related_name="recipe")
     pub_date = models.DateTimeField(
-        'Дата добавления', auto_now_add=True, db_index=True
+        'Дата добавления', auto_now_add=True
     )
     ingredients = models.ManyToManyField(
         Ingredients,
@@ -93,6 +93,18 @@ class RecipesIngredients(models.Model):
                 f'{self.ingredients.name} - '
                 f'{self.amount} '
                 f'{self.ingredients.measurement}')
+
+
+class TagRecipes(models.Model):
+    recipe = models.ForeignKey(Recipes, on_delete=models.CASCADE)
+    tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['recipe', 'tag'], name='unique_tag_for_recipe'
+            )
+        ]
 
 
 class Follow(models.Model):
