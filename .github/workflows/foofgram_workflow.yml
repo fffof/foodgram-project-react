@@ -66,12 +66,12 @@ jobs:
             key: ${{ secrets.SSH_KEY }}
             passphrase: ${{ secrets.PASSPHRASE }}
             script: |
-              cd infra
+              
               sudo docker pull ${{ secrets.DOCKER_USERNAME }}/infra_backend:latest
               sudo docker pull ${{ secrets.DOCKER_USERNAME }}/infra_frontend:latest
               sudo docker-compose pull
               sudo docker-compose rm backend
-              
+              cd infra
               sudo docker-compose up -d --build
   send_message:
     runs-on: ubuntu-latest
