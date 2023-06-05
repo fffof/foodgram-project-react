@@ -66,6 +66,7 @@ jobs:
             key: ${{ secrets.SSH_KEY }}
             passphrase: ${{ secrets.PASSPHRASE }}
             script: |
+              cd infra
               sudo docker pull ${{ secrets.DOCKER_USERNAME }}/infra_backend:latest
               sudo docker pull ${{ secrets.DOCKER_USERNAME }}/infra_frontend:latest
               sudo docker-compose pull
