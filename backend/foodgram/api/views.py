@@ -80,8 +80,6 @@ class CustomPagination(PageNumberPagination):
 
 class CreateDeleteMixin:
     def add_del_obj_action(request, model, serializer, data):
-        """Функция для добавления и удаления данных в модели Favorite,
-        Follow, ShoppingCart."""
 
         obj_exists = model.objects.filter(**data)
         if request.method == 'POST':
@@ -212,8 +210,8 @@ class RecipeViewSet(viewsets.ModelViewSet, CreateDeleteMixin):
         ).annotate(Sum('amount'))
 
         for index, ingredient in enumerate(sorted(shopping_cart), start=1):
-            text += f'{index}. {ingredient[0].capitalize()} ' \
-                    f'({ingredient[1]}) - {ingredient[2]};\n'
+            text += f'{index}. {ingredient[0].capitalize()} '
+            text += f'({ingredient[1]}) - {ingredient[2]};\n'
 
         response = HttpResponse(text, content_type='text/plain')
         response['Content-Disposition'] = (
