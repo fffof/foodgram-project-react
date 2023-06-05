@@ -79,7 +79,7 @@ class CustomPagination(PageNumberPagination):
 
 
 class CreateDeleteMixin:
-    def add_del_obj_action(request, model, serializer, data):
+    def add_del_obj_action(self, request, model, serializer, data):
 
         obj_exists = model.objects.filter(**data)
         if request.method == 'POST':
