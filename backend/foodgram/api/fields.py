@@ -1,6 +1,7 @@
 import base64
 
 from django.core.files.base import ContentFile
+from recipes.models import Tag
 from rest_framework import serializers
 
 
@@ -11,3 +12,8 @@ class Base64ImageField(serializers.ImageField):
             ext = format.split('/')[-1]
             data = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
         return super().to_internal_value(data)
+
+
+class TagListField(serializers.ListField):
+    def to_internal_value(self, data):
+        return Tag.objects.in_bulk(data)
