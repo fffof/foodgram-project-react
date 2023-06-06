@@ -11,7 +11,7 @@ DATABASES = {
         'PORT': os.getenv('DB_PORT', default='5432'),
     }
 }
-AUTH_USER_MODEL = 'users.CustomUser'
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {

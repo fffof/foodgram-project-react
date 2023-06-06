@@ -1,14 +1,24 @@
 version: '3.3'
 services:
-
   db:
     image: postgres:13.0-alpine
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_HOST}
     volumes:
        - postgres_data:/var/lib/postgresql/data/
     env_file:
       - ./.env
+
+  frontend:
+    image: fffof/infra_frontend
+    volumes:
+      - ../frontend/:/app/result_build/
+
+
   backend:
-    image: fffof/infra_backend:latest
+    image: fffof/infra_backend
     volumes:
       - static_value:/app/static/
       - media_value:/app/media/
@@ -16,10 +26,7 @@ services:
       - db
     env_file:
       - ./.env
-  frontend:
-    image: fffof/infra_frontend
-    volumes:
-      - ../frontend/:/app/result_build/
+
   nginx:
     image: nginx:1.19.3
     ports:
@@ -28,9 +35,11 @@ services:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
       - ../frontend/build:/usr/share/nginx/html/
       - ../docs/:/usr/share/nginx/html/api/docs/
+      - static_value:/var/html/static/
+      - media_value:/var/html/media/
     depends_on:
       - backend
-  
+
 
 
 volumes:

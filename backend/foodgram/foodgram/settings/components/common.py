@@ -32,7 +32,6 @@ INSTALLED_APPS = [
     'api.apps.ApiConfig',
 ]
 
-AUTH_USER_MODEL = 'users.CustomUser'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -46,7 +45,7 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'foodgram.urls'
 
-
+AUTH_USER_MODEL = 'users.CustomUser'
 
 
 TEMPLATES = [
