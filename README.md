@@ -10,3 +10,9 @@
 
 Также весь фукнционал сайта доступен через API, его вы можете найти на страничке: 
 http://localhost/api/docs/redoc.html
+
+
+Сайт доступен по [адресу](http://158.160.27.146/recipes)
+
+Технологии:
+Python 3.7, Django 2.2, DRF, Djoser, PostgreSQL, Docker
