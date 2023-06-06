@@ -8,7 +8,7 @@ services:
     env_file:
       - ./.env
   backend:
-    image: fffof/infra_backend
+    image: fffof/infra_backend:latest
     volumes:
       - static_value:/app/static/
       - media_value:/app/media/
