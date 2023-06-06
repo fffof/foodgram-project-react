@@ -21,7 +21,6 @@ User = get_user_model()
 
 
 class RecipeAnonymousFilters(rest_framework.FilterSet):
-
     tags = rest_framework.ModelMultipleChoiceFilter(
         field_name='tag__slug',
         queryset=Tag.objects.all(),
@@ -45,7 +44,6 @@ class IngredientFilter(rest_framework.FilterSet):
 
 
 class RecipeFilters(RecipeAnonymousFilters):
-
     is_favorited = rest_framework.BooleanFilter(
         field_name='favorites',
         method='get_filter_queryset',
@@ -80,7 +78,6 @@ class CustomPagination(PageNumberPagination):
 
 class CreateDeleteMixin:
     def add_del_obj_action(self, request, model, serializer, data):
-
         obj_exists = model.objects.filter(**data)
         if request.method == 'POST':
             serializer = serializer(data=data, context={'request': request})
