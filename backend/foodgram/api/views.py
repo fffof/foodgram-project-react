@@ -8,7 +8,6 @@ from recipes.models import (Favorite, Follow, Ingredient, IngredientRecipe,
                             Recipe, ShoppingCart, Tag)
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -71,10 +70,6 @@ class RecipeFilters(RecipeAnonymousFilters):
         )
 
 
-class CustomPagination(PageNumberPagination):
-    page_size = 6
-
-
 class CreateDeleteMixin:
     def add_del_obj_action(self, request, model, serializer, data):
         obj_exists = model.objects.filter(**data)
@@ -91,7 +86,6 @@ class CreateDeleteMixin:
 
 
 class CustomUserViewSet(UserViewSet, CreateDeleteMixin):
-    pagination_class = CustomPagination
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -161,7 +155,6 @@ class RecipeViewSet(viewsets.ModelViewSet, CreateDeleteMixin):
     permission_classes = (OwnerOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilters
-    pagination_class = CustomPagination
 
     @action(
         methods=['post', 'delete'],
