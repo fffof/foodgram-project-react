@@ -20,7 +20,7 @@ class FieldCheckingMixin():
         data.update({'user': user.id})
         return model.objects.filter(**data).exists()
 
-    def create_update_instance_recipe(recipe, ingredients, tags):
+    def create_update_instance_recipe(self, recipe, ingredients, tags):
         obj_tag_recipe = []
         obj_ingredient_recipe = []
 
