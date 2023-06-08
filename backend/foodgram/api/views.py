@@ -46,7 +46,7 @@ class IngredientFilter(rest_framework.FilterSet):
 class RecipeFilters(RecipeAnonymousFilters):
     is_favorited = rest_framework.BooleanFilter(
         field_name='favorites',
-        method='get_filter_queryset',
+        method='filter_queryset',
         label='favorites',
     )
     is_in_shopping_cart = rest_framework.BooleanFilter(
@@ -72,7 +72,6 @@ class RecipeFilters(RecipeAnonymousFilters):
 
 
 class CustomPagination(PageNumberPagination):
-    page_size_query_param = 'limit'
     page_size = 6
 
 
