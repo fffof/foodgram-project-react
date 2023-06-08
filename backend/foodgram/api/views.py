@@ -163,7 +163,6 @@ class RecipeViewSet(viewsets.ModelViewSet, CreateDeleteMixin):
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilters
 
-
     @action(
         methods=['post', 'delete'],
         detail=True,
