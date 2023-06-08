@@ -10,29 +10,29 @@ from .fields import Base64ImageField, TagListField
 User = get_user_model()
 
 
-def get_is_field_action(self, request, model, data):
-    user = None
-    if request and hasattr(request, 'user'):
-        user = request.user
-    if not user:
-        return False
-    data.update({'user': user.id})
-    return model.objects.filter(**data).exists()
+class FieldCheckingMixin():
+    def get_is_field_action(self, request, model, data):
+        user = None
+        if request and hasattr(request, 'user'):
+            user = request.user
+        if not user:
+            return False
+        data.update({'user': user.id})
+        return model.objects.filter(**data).exists()
+
+    def create_update_instance_recipe(self, recipe, ingredients, tags):
+        IngredientRecipe.objects.bulk_create([
+            IngredientRecipe(
+                recipe=recipe,
+                ingredient=data['ingredient'].get('id'),
+                amount=data.get('amount'),
+            ) for data in ingredients])
+        TagRecipe.objects.bulk_create([
+            TagRecipe(recipe=recipe, tag=tag) for tag in tags])
+        return
 
 
-def create_update_instance_recipe(self, recipe, ingredients, tags):
-    IngredientRecipe.objects.bulk_create([
-        IngredientRecipe(
-            recipe=recipe,
-            ingredient=data['ingredient'].get('id'),
-            amount=data.get('amount'),
-        ) for data in ingredients])
-    TagRecipe.objects.bulk_create([
-        TagRecipe(recipe=recipe, tag=tag) for tag in tags])
-    return
-
-
-class CustomUserSerializer(UserSerializer):
+class CustomUserSerializer(UserSerializer, FieldCheckingMixin):
     is_subscribed = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
@@ -55,7 +55,7 @@ class CustomUserSerializer(UserSerializer):
         data = {
             'author': obj.id
         }
-        return get_is_field_action(request, Follow, data)
+        return self.get_is_field_action(request, Follow, data)
 
 
 class CustomUserCreateSerializer(UserCreateSerializer):
@@ -109,7 +109,7 @@ class IngredientInRecipeSerializer(serializers.ModelSerializer):
         return value
 
 
-class RecipeViewSerializer(serializers.ModelSerializer):
+class RecipeViewSerializer(serializers.ModelSerializer, FieldCheckingMixin):
     author = CustomUserSerializer(read_only=True)
     tags = TagSerializer(many=True, source='tag')
     ingredients = serializers.SerializerMethodField(
@@ -145,7 +145,7 @@ class RecipeViewSerializer(serializers.ModelSerializer):
         data = {
             'recipe': obj.id
         }
-        return get_is_field_action(request, ShoppingCart, data)
+        return self.get_is_field_action(request, ShoppingCart, data)
 
     def get_ingredients(self, obj):
         ingredients = IngredientRecipe.objects.filter(recipe=obj)
@@ -156,10 +156,10 @@ class RecipeViewSerializer(serializers.ModelSerializer):
         data = {
             'recipe': obj.id
         }
-        return get_is_field_action(request, Favorite, data)
+        return self.get_is_field_action(request, Favorite, data)
 
 
-class RecipeSerializer(serializers.ModelSerializer):
+class RecipeSerializer(serializers.ModelSerializer, FieldCheckingMixin):
     ingredients = IngredientInRecipeSerializer(many=True)
     tags = TagListField()
     image = Base64ImageField(required=False, allow_null=True)
@@ -189,7 +189,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         tags = validated_data.pop('tags')
         recipe = Recipe.objects.create(**validated_data)
 
-        create_update_instance_recipe(recipe, ingredients, tags)
+        self.create_update_instance_recipe(recipe, ingredients, tags)
 
         return recipe
 
@@ -201,7 +201,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         TagRecipe.objects.filter(recipe=instance).delete()
         IngredientRecipe.objects.filter(recipe=instance).delete()
 
-        create_update_instance_recipe(instance, ingredients, tags)
+        self.create_update_instance_recipe(instance, ingredients, tags)
 
         return super().update(instance, validated_data)
 

@@ -162,6 +162,7 @@ class RecipeViewSet(viewsets.ModelViewSet, CreateDeleteMixin):
     permission_classes = (OwnerOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilters
+    pagination_class = CustomPagination
 
     @action(
         methods=['post', 'delete'],
