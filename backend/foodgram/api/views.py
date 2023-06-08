@@ -1,16 +1,17 @@
 from django.contrib.auth import get_user_model
 from django.db.models import Sum
 from django.http import HttpResponse
-from django_filters import rest_framework
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
 from recipes.models import (Favorite, Follow, Ingredient, IngredientRecipe,
                             Recipe, ShoppingCart, Tag)
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from .filters import IngredientFilter, RecipeAnonymousFilters, RecipeFilters
 from .permissions import AdminOrReadOnly, OwnerOrReadOnly
 from .serializers import (FavoriteSerializer, IngredientSerializer,
                           ShoppingCartSerializer, SubscribeSerializer,
@@ -19,55 +20,9 @@ from .serializers import (FavoriteSerializer, IngredientSerializer,
 User = get_user_model()
 
 
-class RecipeAnonymousFilters(rest_framework.FilterSet):
-    tags = rest_framework.ModelMultipleChoiceFilter(
-        field_name='tag__slug',
-        queryset=Tag.objects.all(),
-        to_field_name='slug',
-    )
-
-    class Meta:
-        model = Recipe
-        fields = ('tags',)
-
-
-class IngredientFilter(rest_framework.FilterSet):
-    name = rest_framework.CharFilter(
-        field_name='name',
-        lookup_expr='istartswith'
-    )
-
-    class Meta:
-        model = Ingredient
-        fields = ('name', 'measurement_unit')
-
-
-class RecipeFilters(RecipeAnonymousFilters):
-    is_favorited = rest_framework.BooleanFilter(
-        field_name='favorites',
-        method='filter_queryset',
-        label='favorites',
-    )
-    is_in_shopping_cart = rest_framework.BooleanFilter(
-        field_name='shoppings',
-        method='get_filter_queryset',
-        label='shopping cart',
-    )
-    author = rest_framework.NumberFilter(field_name='author__id')
-
-    class Meta:
-        model = RecipeAnonymousFilters.Meta.model
-        fields = RecipeAnonymousFilters.Meta.fields + ('author',)
-
-    def get_filter_queryset(self, queryset, field_name, value):
-        user = self.request.user
-        if not value:
-            return queryset
-        return queryset.filter(
-            id__in=user.favorites.values_list('recipe')
-            if field_name == 'favorites'
-            else user.shoppings.values_list('recipe')
-        )
+class CustomPagination(PageNumberPagination):
+    page_size_query_param = 'limit'
+    page_size = 6
 
 
 class CreateDeleteMixin:
@@ -86,6 +41,7 @@ class CreateDeleteMixin:
 
 
 class CustomUserViewSet(UserViewSet, CreateDeleteMixin):
+    pagination_class = CustomPagination
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -155,6 +111,7 @@ class RecipeViewSet(viewsets.ModelViewSet, CreateDeleteMixin):
     permission_classes = (OwnerOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilters
+    pagination_class = CustomPagination
 
     @action(
         methods=['post', 'delete'],
