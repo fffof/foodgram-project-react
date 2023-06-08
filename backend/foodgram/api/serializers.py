@@ -20,15 +20,26 @@ class FieldCheckingMixin():
         data.update({'user': user.id})
         return model.objects.filter(**data).exists()
 
-    def create_update_instance_recipe(self, recipe, ingredients, tags):
-        IngredientRecipe.objects.bulk_create([
-            IngredientRecipe(
-                recipe=recipe,
-                ingredient=data['ingredient'].get('id'),
-                amount=data.get('amount'),
-            ) for data in ingredients])
-        TagRecipe.objects.bulk_create([
-            TagRecipe(recipe=recipe, tag=tag) for tag in tags])
+    def create_update_instance_recipe(recipe, ingredients, tags):
+        obj_tag_recipe = []
+        obj_ingredient_recipe = []
+
+        for data in ingredients:
+            obj_ingredient_recipe.append(
+                IngredientRecipe(
+                    recipe=recipe,
+                    ingredient=data['ingredient'].get('id'),
+                    amount=data.get('amount'),
+                )
+            )
+        IngredientRecipe.objects.bulk_create(obj_ingredient_recipe)
+
+        for tag in tags.values():
+            obj_tag_recipe.append(
+                TagRecipe(recipe=recipe, tag=tag)
+            )
+        TagRecipe.objects.bulk_create(obj_tag_recipe)
+
         return
 
 
