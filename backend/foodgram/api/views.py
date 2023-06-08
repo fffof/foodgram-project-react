@@ -155,7 +155,7 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = TagSerializer
     queryset = Tag.objects.all()
     permission_classes = (AdminOrReadOnly,)
-    pagination_class = None
+    pagination_class = CustomPagination
 
 
 class RecipeViewSet(viewsets.ModelViewSet, CreateDeleteMixin):
