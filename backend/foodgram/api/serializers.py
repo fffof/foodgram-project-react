@@ -125,12 +125,15 @@ class RecipeViewSerializer(serializers.ModelSerializer, FieldCheckingMixin):
     tags = TagSerializer(many=True, source='tag')
     ingredients = serializers.SerializerMethodField(
         read_only=True,
+        source='get_ingredients'
     )
     is_favorited = serializers.SerializerMethodField(
         read_only=True,
+        source='get_is_favorited'
     )
     is_in_shopping_cart = serializers.SerializerMethodField(
         read_only=True,
+        source='get_is_in_shopping_cart'
     )
 
     class Meta:
