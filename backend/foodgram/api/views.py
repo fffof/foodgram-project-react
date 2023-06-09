@@ -14,8 +14,9 @@ from rest_framework.response import Response
 from .filters import IngredientFilter, RecipeAnonymousFilters, RecipeFilters
 from .permissions import AdminOrReadOnly, OwnerOrReadOnly
 from .serializers import (FavoriteSerializer, IngredientSerializer,
-                          RecipeViewSerializer, ShoppingCartSerializer,
-                          SubscribeSerializer, TagSerializer)
+                          RecipeSerializer, RecipeViewSerializer,
+                          ShoppingCartSerializer, SubscribeSerializer,
+                          TagSerializer)
 
 User = get_user_model()
 
@@ -112,7 +113,12 @@ class RecipeViewSet(viewsets.ModelViewSet, CreateDeleteMixin):
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilters
     pagination_class = CustomPagination
-    serializer_class = RecipeViewSerializer
+
+    def get_serializer_class(self):
+        if self.action == "retrieve" or self.action == "list":
+            return RecipeViewSerializer
+        elif self.action == "create" or self.action == "update":
+            return RecipeSerializer
 
     @action(
         methods=['post', 'delete'],
