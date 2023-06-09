@@ -117,6 +117,8 @@ class RecipeViewSet(viewsets.ModelViewSet, CreateDeleteMixin):
     def get_serializer_class(self):
         if self.action == "create" or (self.action == "update"):
             return RecipeSerializer
+        elif self.action == "partial_update":
+            return RecipeSerializer
         return RecipeViewSerializer
 
     @action(
