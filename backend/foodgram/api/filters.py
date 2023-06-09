@@ -28,7 +28,7 @@ class IngredientFilter(rest_framework.FilterSet):
 class RecipeFilters(RecipeAnonymousFilters):
     is_favorited = rest_framework.BooleanFilter(
         field_name='favorites',
-        method='filter_queryset',
+        method='get_filter_queryset',
         label='favorites',
     )
     is_in_shopping_cart = rest_framework.BooleanFilter(
