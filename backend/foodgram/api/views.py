@@ -115,7 +115,8 @@ class RecipeViewSet(viewsets.ModelViewSet, CreateDeleteMixin):
     pagination_class = CustomPagination
 
     def get_serializer_class(self):
-        if self.action == "create" or self.action == "update":
+        if self.action == "create" or (self.action == "update") or (
+                self.actions == "partial_update"):
             return RecipeSerializer
         return RecipeViewSerializer
 
