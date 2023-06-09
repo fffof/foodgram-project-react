@@ -13,7 +13,7 @@ from rest_framework.response import Response
 
 from .filters import IngredientFilter, RecipeAnonymousFilters, RecipeFilters
 from .permissions import AdminOrReadOnly, OwnerOrReadOnly
-from .serializers import (FavoriteSerializer, IngredientSerializer,
+from .serializers import (FavoriteShoppingCartSerializer, IngredientSerializer,
                           RecipeSerializer, RecipeViewSerializer,
                           ShoppingCartSerializer, SubscribeSerializer,
                           TagSerializer)
@@ -184,6 +184,6 @@ class RecipeViewSet(viewsets.ModelViewSet, CreateDeleteMixin):
         return self.add_del_obj_action(
             request,
             Favorite,
-            FavoriteSerializer,
+            FavoriteShoppingCartSerializer,
             data,
         )
